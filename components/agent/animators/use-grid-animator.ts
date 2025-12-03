@@ -32,16 +32,9 @@ export const useGridAnimator = (
     }
 
     switch (type) {
-      case "thinking":
-        newSequence = generateThinkingSequence(rows, columns);
-        break;
-      case "connecting":
-        newSequence = generateConnectingSequence(
-          rows,
-          columns,
-          animationOptions?.connectingRing ?? 1
-        );
-        break;
+   
+
+      
       case "listening":
         newSequence = generateListeningSequence(rows, columns);
         break;
