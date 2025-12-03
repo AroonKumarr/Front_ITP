@@ -22,10 +22,7 @@ export const useGridAnimator = (
   useEffect(() => {
     let newSequence: { x: number; y: number }[] = [];
 
-    // Force type narrowing
-    const safeType = type as "thinking" | "connecting" | "listening" | "active" | "idle" | "error";
-
-    switch (safeType) {
+    switch (type as AgentState | "thinking" | "connecting") {
       case "thinking":
         newSequence = generateThinkingSequence(rows, columns);
         break;
@@ -33,7 +30,7 @@ export const useGridAnimator = (
         newSequence = generateConnectingSequence(
           rows,
           columns,
-          animationOptions?.connectingRing ?? 1,
+          animationOptions?.connectingRing ?? 1
         );
         break;
       case "listening":
@@ -41,6 +38,7 @@ export const useGridAnimator = (
         break;
       default:
         newSequence = [];
+        break;
     }
 
     setSequence(newSequence);
@@ -55,7 +53,7 @@ export const useGridAnimator = (
     }, interval);
 
     return () => clearInterval(intervalId);
-  }, [interval, columns, rows, state, type, sequence.length]);
+  }, [interval, rows, columns, state, type, sequence.length]);
 
   return sequence[index % sequence.length];
 };
