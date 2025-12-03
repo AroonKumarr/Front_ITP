@@ -1,4 +1,4 @@
-import { AgentState } from "@/data/agent";
+import { AgentState } from "@/components/agent/data/agent";
 import { useEffect, useRef, useState } from "react";
 import {
   GridAnimationOptions,
@@ -8,6 +8,9 @@ import { generateConnectingSequenceBar } from "@/components/agent/animation-sequ
 import { generateListeningSequenceBar } from "@/components/agent/animation-sequences/listening-sequence";
 import { generateThinkingSequenceBar } from "@/components/agent/animation-sequences/thinking-sequence";
 
+/**
+ * Custom hook to animate bar sequences based on agent state.
+ */
 export const useBarAnimator = (
   type: AgentState,
   columns: number,
@@ -16,27 +19,35 @@ export const useBarAnimator = (
   animationOptions?: GridAnimationOptions,
 ): number | number[] => {
   const [index, setIndex] = useState(0);
-  const [sequence, setSequence] = useState<(number | number[])[]>([]);
+  const [sequence, setSequence] = useState<number[] | number[][]>([]);
 
+  // Update sequence whenever type or columns change
   useEffect(() => {
-    if (type === "thinking") {
-      setSequence(generateThinkingSequenceBar(columns));
-    } else if (type === "connecting") {
-      const sequence = [...generateConnectingSequenceBar(columns)];
-      setSequence(sequence);
-    } else if (type === "listening") {
-      setSequence(generateListeningSequenceBar(columns));
-    } else {
-      setSequence([]);
+    let newSequence: number[] | number[][] = [];
+
+    switch (type) {
+      case "thinking":
+        newSequence = generateThinkingSequenceBar(columns);
+        break;
+      case "connecting":
+        newSequence = generateConnectingSequenceBar(columns);
+        break;
+      case "listening":
+        newSequence = generateListeningSequenceBar(columns);
+        break;
+      default:
+        newSequence = [];
     }
+
+    setSequence(newSequence);
     setIndex(0);
-  }, [type, columns, state, animationOptions?.connectingRing]);
+  }, [type, columns]);
 
   const animationFrameId = useRef<number | null>(null);
+
+  // Animate sequence
   useEffect(() => {
-    if (state === "paused") {
-      return;
-    }
+    if (state === "paused" || sequence.length === 0) return;
 
     let startTime = performance.now();
 
@@ -44,7 +55,7 @@ export const useBarAnimator = (
       const timeElapsed = time - startTime;
 
       if (timeElapsed >= interval) {
-        setIndex((prev) => prev + 1);
+        setIndex((prev) => (sequence.length > 0 ? (prev + 1) % sequence.length : 0));
         startTime = time;
       }
 
@@ -58,7 +69,7 @@ export const useBarAnimator = (
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [interval, columns, state, type, sequence.length]);
+  }, [interval, state, sequence]);
 
   return sequence[index % sequence.length];
 };
