@@ -20,35 +20,38 @@ export const useGridAnimator = (
   const [sequence, setSequence] = useState<{ x: number; y: number }[]>([]);
 
   useEffect(() => {
-    if (type === "thinking") {
-      setSequence(generateThinkingSequence(rows, columns));
-    } else if (type === "connecting") {
-      const sequence = [
-        ...generateConnectingSequence(
+    let newSequence: { x: number; y: number }[] = [];
+
+    switch (type) {
+      case "thinking":
+        newSequence = generateThinkingSequence(rows, columns);
+        break;
+      case "connecting":
+        newSequence = generateConnectingSequence(
           rows,
           columns,
           animationOptions?.connectingRing ?? 1,
-        ),
-      ];
-      setSequence(sequence);
-    } else if (type === "listening") {
-      setSequence(generateListeningSequence(rows, columns));
-    } else {
-      setSequence([]);
+        );
+        break;
+      case "listening":
+        newSequence = generateListeningSequence(rows, columns);
+        break;
+      default:
+        newSequence = [];
     }
+
+    setSequence(newSequence);
     setIndex(0);
   }, [type, rows, columns, state, animationOptions?.connectingRing]);
 
   useEffect(() => {
-    if (state === "paused") {
-      return;
-    }
-    const indexInterval = setInterval(() => {
-      setIndex((prev) => {
-        return prev + 1;
-      });
+    if (state === "paused") return;
+
+    const intervalId = setInterval(() => {
+      setIndex((prev) => prev + 1);
     }, interval);
-    return () => clearInterval(indexInterval);
+
+    return () => clearInterval(intervalId);
   }, [interval, columns, rows, state, type, sequence.length]);
 
   return sequence[index % sequence.length];
