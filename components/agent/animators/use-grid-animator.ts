@@ -22,7 +22,16 @@ export const useGridAnimator = (
   useEffect(() => {
     let newSequence: { x: number; y: number }[] = [];
 
-    switch (type as AgentState | "thinking" | "connecting") {
+    const isAgentState = (val: string): val is AgentState => {
+      return ["active", "idle", "listening", "error", "thinking", "connecting"].includes(val);
+    };
+
+    if (!isAgentState(type)) {
+      setSequence([]);
+      return;
+    }
+
+    switch (type) {
       case "thinking":
         newSequence = generateThinkingSequence(rows, columns);
         break;
@@ -36,7 +45,9 @@ export const useGridAnimator = (
       case "listening":
         newSequence = generateListeningSequence(rows, columns);
         break;
-      default:
+      case "active":
+      case "idle":
+      case "error":
         newSequence = [];
         break;
     }
@@ -54,6 +65,8 @@ export const useGridAnimator = (
 
     return () => clearInterval(intervalId);
   }, [interval, rows, columns, state, type, sequence.length]);
+
+  if (sequence.length === 0) return { x: 0, y: 0 };
 
   return sequence[index % sequence.length];
 };
