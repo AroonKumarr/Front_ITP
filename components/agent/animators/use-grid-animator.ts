@@ -22,7 +22,10 @@ export const useGridAnimator = (
   useEffect(() => {
     let newSequence: { x: number; y: number }[] = [];
 
-    switch (type) {
+    // Force type narrowing
+    const safeType = type as "thinking" | "connecting" | "listening" | "active" | "idle" | "error";
+
+    switch (safeType) {
       case "thinking":
         newSequence = generateThinkingSequence(rows, columns);
         break;
